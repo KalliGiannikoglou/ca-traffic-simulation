@@ -1,0 +1,8 @@
+1. Change Compiler in CMakeLists.txt: 
+    # Define the compiler
+    set(CMAKE_CXX_COMPILER "mpic++")
+
+2. Add MpiProcess.cpp and MpiProcess.h in executables in CMakeLists.txt
+
+3. Exec project with:
+    $ mpirun -np 4 --oversubscribe ./cats
