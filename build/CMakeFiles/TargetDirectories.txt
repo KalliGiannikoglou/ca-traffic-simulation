@@ -1,3 +1,0 @@
-/home/kalli/Desktop/PMS/ALGOS/ergasia1/ca-traffic-simulation/build/CMakeFiles/edit_cache.dir
-/home/kalli/Desktop/PMS/ALGOS/ergasia1/ca-traffic-simulation/build/CMakeFiles/rebuild_cache.dir
-/home/kalli/Desktop/PMS/ALGOS/ergasia1/ca-traffic-simulation/build/CMakeFiles/cats.dir
