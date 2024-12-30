@@ -24,6 +24,7 @@ public:
     ~Road();
     std::vector<Lane*> getLanes();
     int attemptSpawn(Inputs inputs, std::vector<Vehicle*>* vehicles, int* next_id_ptr);
+    int attemptSpawn(int lane_num, int starting_site, Vehicle* vehicle_ptr, std::vector<Vehicle*>* vehicles);
 
 #ifdef DEBUG
     void printRoad();

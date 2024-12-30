@@ -32,6 +32,8 @@ public:
     int addVehicle(int site, Vehicle* vehicle_ptr);
     int removeVehicle(int site);
     int attemptSpawn(Inputs inputs, std::vector<Vehicle*>* vehicles, int* next_id_ptr, CDF* interarrival_time_cdf);
+    int attemptSpawn(int starting_site, Vehicle* vehicle_ptr, std::vector<Vehicle*>* vehicles);
+    
 #ifdef DEBUG
     void printLane();
 #endif

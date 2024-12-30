@@ -29,6 +29,8 @@ CMakeFiles/cats.dir/src/Road.cpp.o: ../src/Inputs.h
 CMakeFiles/cats.dir/src/Road.cpp.o: ../src/Lane.h
 CMakeFiles/cats.dir/src/Road.cpp.o: ../src/Road.cpp
 CMakeFiles/cats.dir/src/Road.cpp.o: ../src/Road.h
+CMakeFiles/cats.dir/src/Road.cpp.o: ../src/Statistic.h
+CMakeFiles/cats.dir/src/Road.cpp.o: ../src/Vehicle.h
 
 CMakeFiles/cats.dir/src/Simulation.cpp.o: ../src/CDF.h
 CMakeFiles/cats.dir/src/Simulation.cpp.o: ../src/Inputs.h

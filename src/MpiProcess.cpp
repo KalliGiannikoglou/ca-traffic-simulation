@@ -35,7 +35,6 @@ MpiProcess::MpiProcess(int argc, char **argv){
         this->next_rank = this->rank + 1;
 
     printf("My prev rank is: %d and my next rank is: %d\n", this->prev_rank, this->next_rank);
-
     this->defineMpiVehicle();
 }
 
@@ -69,18 +68,15 @@ void MpiProcess::divideRoad(int road_length){
 
             MPI_Send(&temp_start, 1, MPI_INT, i, 30, MPI_COMM_WORLD);
             MPI_Send(&temp_end, 1, MPI_INT, i, 40, MPI_COMM_WORLD);
-
             temp_start = temp_end;
         }
     }
-
     MPI_Status status;
     MPI_Recv(&temp_start, 1, MPI_INT, 0, 30, MPI_COMM_WORLD, &status);
     MPI_Recv(&temp_end, 1, MPI_INT, 0, 40, MPI_COMM_WORLD, &status);
 
     this->road_start = temp_start;
     this->road_end = temp_end;
-
     printf("Process: %d, my road start: %d, my road end: %d\n", this->getRank(), this->road_start, this->road_end);
 
 }
@@ -113,9 +109,11 @@ void MpiProcess::defineMpiVehicle(){
 // send all the vehicles that are about to cross the thresold
 void MpiProcess::sendVehicle(std::vector<Vehicle *>& vehicles_to_send, int destProcess){
     int size = vehicles_to_send.size();
-    MPI_Send(&size, 1, MPI_INT, destProcess, 10, MPI_COMM_WORLD);
+    MPI_Send(&size, 1, MPI_INT, destProcess, 50, MPI_COMM_WORLD);
     for(auto &vehicle: vehicles_to_send){
-        MPI_Send(&vehicle, 1, this->mpi_vehicle, destProcess, 10, MPI_COMM_WORLD);
+        int lane_number = vehicle->getLanePtr()->getLaneNumber();
+        MPI_Send(&lane_number, 1, MPI_INT, destProcess, 100, MPI_COMM_WORLD);
+        MPI_Send(vehicle, 1, this->mpi_vehicle, destProcess, 10, MPI_COMM_WORLD);
     }
     printf("Process: %d, sent %d vehicles to process: %d\n", this->getRank(), size, destProcess);
     for(int i = 0; i < size; i++){
@@ -124,17 +122,33 @@ void MpiProcess::sendVehicle(std::vector<Vehicle *>& vehicles_to_send, int destP
 }
 
 // receive all the vehicles that are about to cross the theshold
-std::vector<Vehicle> MpiProcess::receiveVehicle(std::vector<Vehicle>& vehicles_to_recv, int srcProcess){
+std::vector<std::vector<Vehicle*>> MpiProcess::receiveVehicle(int srcProcess) {
     int size;
-    MPI_Recv(&size, 1, MPI_INT, srcProcess, 10, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    if(size > 0){
-        vehicles_to_recv.resize(size);
+    MPI_Recv(&size, 1, MPI_INT, srcProcess, 50, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+    // Create 2 lists for lanes 0 and 1
+    std::vector<std::vector<Vehicle*>> vehicles_to_recv(2);
+
+    if (size > 0) {
         for (int i = 0; i < size; i++) {
-            MPI_Recv(&vehicles_to_recv[i], 1, this->mpi_vehicle, srcProcess, 10, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-        }
-        printf("Process: %d, received %d vehicles from process: %d\n", this->getRank(), size, srcProcess);
-        for(int i = 0; i < size; i++){
-            printf("ID: %d, Position: %d, Speed: %d\n", vehicles_to_recv[i].getId(), vehicles_to_recv[i].gap_forward, vehicles_to_recv[i].getSpeed());
+            int lane_num;
+
+            // Receive the lane number
+            MPI_Recv(&lane_num, 1, MPI_INT, srcProcess, 100, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+            // Dynamically allocate a Vehicle object
+            Vehicle* vehicle = new Vehicle();
+
+            // Receive the vehicle data
+            MPI_Recv(vehicle, 1, this->mpi_vehicle, srcProcess, 10, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+            // Place the dynamically allocated vehicle in the appropriate list (0 or 1 for lane_num)
+            if (lane_num == 0 || lane_num == 1) {
+                vehicles_to_recv[lane_num].push_back(vehicle);
+            } else {
+                printf("Received unexpected lane_num %d\n", lane_num);
+                delete vehicle; // Clean up the dynamically allocated object
+            }
         }
     }
     return vehicles_to_recv;

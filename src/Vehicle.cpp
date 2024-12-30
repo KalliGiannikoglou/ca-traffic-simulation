@@ -265,3 +265,11 @@ int Vehicle::getPosition(){
 int Vehicle::getSpeed(){
     return this->speed;
 }
+
+void Vehicle::setLanePtr(Lane* lane_ptr){
+    this->lane_ptr = lane_ptr;
+}
+
+void Vehicle::setPosition(int position){
+    this->position = position;
+}

@@ -98,23 +98,33 @@ int Simulation::run_simulation(MpiProcess *curr_proccess) {
         
         // Receive the vehicles from the previous process
         if(curr_proccess->getRank() == 1){
-            std::vector<Vehicle> vehicles_to_recv;
-            vehicles_to_recv = curr_proccess->receiveVehicle(vehicles_to_recv, curr_proccess->getPrevRank());
-            std::cout << "Rank 1: Received " << vehicles_to_recv.size() << " vehicles.\n";
+            std::vector<std::vector<Vehicle *>> vehicles_to_recv;
+            vehicles_to_recv = curr_proccess->receiveVehicle(curr_proccess->getPrevRank());
         
-            // for(auto &vehicle: vehicles_to_recv){
-            //     this->vehicles.push_back(&vehicle);
-            // }
-
-            printf("Rank %d: After receiving, my vehicles are:\n", curr_proccess->getRank());
             for(int i = 0; i < (int)vehicles_to_recv.size(); i++){
-                printf("ID: %d, Position: %d, Speed: %d\n", vehicles_to_recv[i].getId(), vehicles_to_recv[i].getPosition(), vehicles_to_recv[i].getSpeed());
+                for(auto vehicle: vehicles_to_recv[i]){
+                    this->road_ptr->attemptSpawn(i, curr_proccess->getStartPosition(), vehicle, &(this->vehicles));
+                }
             }
+
+            printf("My vehicles after spawning are: ");
+            for (auto vehicle : this->vehicles) {
+                printf("Id: %d, Position: %d, Speed: %d\n", vehicle->getId(), vehicle->getPosition(), vehicle->getSpeed());
+            }
+            printf("\n");
         }
        
+        if(curr_proccess->getRank() == 1 && this->vehicles.size() > 0){
+            for(int i = 0; i < (int)this->vehicles.size(); i++){
+                printf("IDd: %d, Position: %d, Speed: %d\n", this->vehicles[i]->getId(), this->vehicles[i]->getPosition(), this->vehicles[i]->getSpeed());
+            }
+        }
 
         // Perform the lane switch step for all vehicles
         for (int n = 0; n < (int) this->vehicles.size(); n++) {
+            if(curr_proccess->getRank() == 1){
+                printf("Attempting to update gaps for vehicle %d\n", this->vehicles[n]->getId());
+            }
             this->vehicles[n]->updateGaps(this->road_ptr);
 #ifdef DEBUG
             this->vehicles[n]->printGaps();

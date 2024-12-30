@@ -47,6 +47,8 @@ public:
     int getPosition();
     int getSpeed();
     Lane *getLanePtr();
+    void setLanePtr(Lane* lane_ptr);
+    void setPosition(int position);
 
     // MpiProcess gets access to the private fields
     friend class MpiProcess;

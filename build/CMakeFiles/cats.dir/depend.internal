@@ -30,6 +30,8 @@ CMakeFiles/cats.dir/src/Road.cpp.o
  /home/kalli/Desktop/PMS/ALGOS/ergasia1/ca-traffic-simulation/src/Lane.h
  /home/kalli/Desktop/PMS/ALGOS/ergasia1/ca-traffic-simulation/src/Road.cpp
  /home/kalli/Desktop/PMS/ALGOS/ergasia1/ca-traffic-simulation/src/Road.h
+ /home/kalli/Desktop/PMS/ALGOS/ergasia1/ca-traffic-simulation/src/Statistic.h
+ /home/kalli/Desktop/PMS/ALGOS/ergasia1/ca-traffic-simulation/src/Vehicle.h
 CMakeFiles/cats.dir/src/Simulation.cpp.o
  /home/kalli/Desktop/PMS/ALGOS/ergasia1/ca-traffic-simulation/src/CDF.h
  /home/kalli/Desktop/PMS/ALGOS/ergasia1/ca-traffic-simulation/src/Inputs.h

@@ -4,6 +4,7 @@
 
 #include "Road.h"
 #include "Inputs.h"
+#include "Vehicle.h"
 
 /**
  * Constructor for the Road
@@ -61,6 +62,13 @@ int Road::attemptSpawn(Inputs inputs, std::vector<Vehicle*>* vehicles, int* next
     // Return with no errors
     return 0;
 }
+
+int Road::attemptSpawn(int lane_num, int starting_site, Vehicle* vehicle_ptr, std::vector<Vehicle*>* vehicles) {
+   
+    this->lanes[lane_num]->attemptSpawn(starting_site, vehicle_ptr, vehicles);
+    return 0;
+}
+
 
 /**
  * Debug function to print all the Lanes of the Road for visualizing the sites in the Road

@@ -26,6 +26,12 @@ Inputs.h
 CDF.h
 /home/kalli/Desktop/PMS/ALGOS/ergasia1/ca-traffic-simulation/src/CDF.h
 
+/home/kalli/Desktop/PMS/ALGOS/ergasia1/ca-traffic-simulation/src/MpiProcess.cpp
+MpiProcess.h
+/home/kalli/Desktop/PMS/ALGOS/ergasia1/ca-traffic-simulation/src/MpiProcess.h
+cstddef
+-
+
 /home/kalli/Desktop/PMS/ALGOS/ergasia1/ca-traffic-simulation/src/MpiProcess.h
 mpi.h
 -
@@ -83,4 +89,14 @@ Road.h
 /home/kalli/Desktop/PMS/ALGOS/ergasia1/ca-traffic-simulation/src/Road.h
 Statistic.h
 /home/kalli/Desktop/PMS/ALGOS/ergasia1/ca-traffic-simulation/src/Statistic.h
+
+/home/kalli/Desktop/PMS/ALGOS/ergasia1/ca-traffic-simulation/src/main.cpp
+iostream
+-
+Inputs.h
+/home/kalli/Desktop/PMS/ALGOS/ergasia1/ca-traffic-simulation/src/Inputs.h
+Simulation.h
+/home/kalli/Desktop/PMS/ALGOS/ergasia1/ca-traffic-simulation/src/Simulation.h
+MpiProcess.h
+/home/kalli/Desktop/PMS/ALGOS/ergasia1/ca-traffic-simulation/src/MpiProcess.h
 
