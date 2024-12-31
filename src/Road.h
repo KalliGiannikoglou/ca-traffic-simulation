@@ -11,6 +11,9 @@
 #include "Inputs.h"
 #include "CDF.h"
 
+// Forward Declarations
+class Vehicle;
+
 /**
  * Class for the Road in the Simulation. The road has multiple Lanes that each contain Vehicles. Has methods to attempt
  * spawning Vehicles in the Lanes
@@ -25,7 +28,6 @@ public:
     std::vector<Lane*> getLanes();
     int attemptSpawn(Inputs inputs, std::vector<Vehicle*>* vehicles, int* next_id_ptr);
     int attemptSpawn(int lane_num, int starting_site, Vehicle* vehicle_ptr, std::vector<Vehicle*>* vehicles);
-
 #ifdef DEBUG
     void printRoad();
 #endif

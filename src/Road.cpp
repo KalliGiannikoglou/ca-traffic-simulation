@@ -69,7 +69,6 @@ int Road::attemptSpawn(int lane_num, int starting_site, Vehicle* vehicle_ptr, st
     return 0;
 }
 
-
 /**
  * Debug function to print all the Lanes of the Road for visualizing the sites in the Road
  */

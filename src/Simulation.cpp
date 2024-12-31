@@ -66,7 +66,7 @@ int Simulation::run_simulation(MpiProcess *curr_proccess) {
 #endif
 
         // Send the vehicles to the next process (if this is not the last process)
-        if(curr_proccess->getRank() == 0){
+        if(curr_proccess->getRank() != curr_proccess->getNumOfProcesses()-1){
             std::vector<Vehicle *> vehicles_to_send;
             for(int i = 0; i < (int)this->vehicles.size(); i++){
                 if(this->vehicles[i]->getPosition()+ this->vehicles[i]->getSpeed() > curr_proccess->getEndPosition()){
@@ -79,9 +79,10 @@ int Simulation::run_simulation(MpiProcess *curr_proccess) {
             for (int i = 0; i < (int) vehicles_to_send.size(); i++) {
                 for(int j = 0; j < (int) this->vehicles.size(); j++){
                     if(this->vehicles[j]->getId() == vehicles_to_send[i]->getId()){
+                        printf("Process: %d, deleting vehicle %d\n", curr_proccess->getRank(), this->vehicles[j]->getId());
+                        
                         // Delete the Vehicle
-                        this->vehicles[j]->getLanePtr()
-                                        ->getSites()[this->vehicles[j]->getPosition()].pop_front();
+                        this->vehicles[j]->getLanePtr()->removeVehicle(this->vehicles[j]->getPosition());  
                         delete this->vehicles[j];
                         this->vehicles.erase(this->vehicles.begin() + j);
                     }
@@ -96,8 +97,8 @@ int Simulation::run_simulation(MpiProcess *curr_proccess) {
             }
         }
         
-        // Receive the vehicles from the previous process
-        if(curr_proccess->getRank() == 1){
+        // Receive the vehicles from the previous process (if this is not process 0)
+        if(curr_proccess->getRank() != 0){
             std::vector<std::vector<Vehicle *>> vehicles_to_recv;
             vehicles_to_recv = curr_proccess->receiveVehicle(curr_proccess->getPrevRank());
         
