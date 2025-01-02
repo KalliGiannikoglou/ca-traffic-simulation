@@ -36,6 +36,7 @@ class MpiProcess{
         void divideRoad(int road_length);
         void sendVehicle(std::vector<Vehicle *>& vehicles, int destProcess);
         std::vector<std::vector<Vehicle *>> receiveVehicle(int srcProcess);
+        bool allowSending(std::vector<Vehicle *>& vehicles, std::vector<Vehicle *>& vehicles_to_send, Vehicle *newVehicle);
 
 
 };

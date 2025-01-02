@@ -50,6 +50,8 @@ public:
     void setLanePtr(Lane* lane_ptr);
     void setPosition(int position);
 
+    bool isInList(std::vector<Vehicle *>& vehicles);
+
     // MpiProcess gets access to the private fields
     friend class MpiProcess;
     

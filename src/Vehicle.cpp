@@ -273,3 +273,12 @@ void Vehicle::setLanePtr(Lane* lane_ptr){
 void Vehicle::setPosition(int position){
     this->position = position;
 }
+
+bool Vehicle::isInList(std::vector<Vehicle *>& vehicles){
+    for(int i = 0; i < vehicles.size(); i++){
+        if(vehicles[i]->getId() == this->id){
+            return true;
+        }
+    }
+    return false;
+}

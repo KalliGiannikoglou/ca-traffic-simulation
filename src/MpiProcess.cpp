@@ -63,8 +63,9 @@ void MpiProcess::divideRoad(int road_length){
         int p = this->getNumOfProcesses();
         
         for(int i = 0; i < p; i++){
-            temp_end = temp_start + remainder / (p-i);
-            remainder = road_length - temp_end;
+            int batch_size = remainder / (p-i);
+            temp_end = temp_start + batch_size;
+            remainder -= batch_size;
 
             MPI_Send(&temp_start, 1, MPI_INT, i, 30, MPI_COMM_WORLD);
             MPI_Send(&temp_end, 1, MPI_INT, i, 40, MPI_COMM_WORLD);
@@ -76,7 +77,7 @@ void MpiProcess::divideRoad(int road_length){
     MPI_Recv(&temp_end, 1, MPI_INT, 0, 40, MPI_COMM_WORLD, &status);
 
     this->road_start = temp_start;
-    this->road_end = temp_end;
+    this->road_end = temp_end - 1;
     printf("Process: %d, my road start: %d, my road end: %d\n", this->getRank(), this->road_start, this->road_end);
 
 }
@@ -117,7 +118,7 @@ void MpiProcess::sendVehicle(std::vector<Vehicle *>& vehicles_to_send, int destP
     }
     printf("Process: %d, sent %d vehicles to process: %d\n", this->getRank(), size, destProcess);
     for(int i = 0; i < size; i++){
-        printf("ID: %d, Position: %d, Speed: %d\n", vehicles_to_send[i]->getId(), vehicles_to_send[i]->getPosition(), vehicles_to_send[i]->getSpeed());
+        printf("ID: %d, Position: %d, Speed: %d, in Lane: %d\n", vehicles_to_send[i]->getId(), vehicles_to_send[i]->getPosition(), vehicles_to_send[i]->getSpeed(), vehicles_to_send[i]->getLanePtr()->getLaneNumber());
     }
 }
 
@@ -153,3 +154,25 @@ std::vector<std::vector<Vehicle*>> MpiProcess::receiveVehicle(int srcProcess) {
     }
     return vehicles_to_recv;
 }
+
+/**
+* Receive the list of vehicles and check if the new vehicle can be sent without passing
+* over vehicles ahead of it
+* @param vehicles pointer to list of all the Vehicles of curr process
+* @param vehicles_to_send pointer to list of Vehicles to be sent in the next process
+* @param newVehicle pointer to the new vehicle we want to send
+* @return true if the new vehicle can be sent, false otherwise
+*/
+bool MpiProcess::allowSending(std::vector<Vehicle *>& vehicles, std::vector<Vehicle *>& vehicles_to_send, Vehicle *newVehicle){
+    
+    for(int i = 0; i < (int)vehicles.size(); i++){
+        // check for vehicles of the same lane 
+        if(vehicles[i]->getLanePtr()->getLaneNumber() == newVehicle->getLanePtr()->getLaneNumber()){
+            if(vehicles[i]->getPosition() > newVehicle->getPosition() && !newVehicle->isInList(vehicles_to_send)){
+            return false;
+            }
+        }
+    }
+    return true;
+}
+

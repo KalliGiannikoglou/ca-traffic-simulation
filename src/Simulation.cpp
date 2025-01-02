@@ -60,16 +60,19 @@ int Simulation::run_simulation(MpiProcess *curr_proccess) {
     while (this->time < this->inputs.max_time) {
 
 #ifdef DEBUG
-        std::cout << "road configuration at time " << time << ":" << std::endl;
-        this->road_ptr->printRoad();
-        std::cout << "performing lane switches..." << std::endl;
+        if(this->vehicles.size() > 0){
+            std::cout << "road configuration at time " << time << ":" << std::endl;
+            this->road_ptr->printRoad();
+            std::cout << "performing lane switches..." << std::endl;
+        }
 #endif
 
         // Send the vehicles to the next process (if this is not the last process)
         if(curr_proccess->getRank() != curr_proccess->getNumOfProcesses()-1){
             std::vector<Vehicle *> vehicles_to_send;
             for(int i = 0; i < (int)this->vehicles.size(); i++){
-                if(this->vehicles[i]->getPosition()+ this->vehicles[i]->getSpeed() > curr_proccess->getEndPosition()){
+                if(curr_proccess->allowSending(vehicles, vehicles_to_send, vehicles[i])
+                    && this->vehicles[i]->getPosition()+ this->vehicles[i]->getSpeed() > curr_proccess->getEndPosition()){
                    vehicles_to_send.push_back(this->vehicles[i]);
                    printf("Process: %d, sending vehicle %d to process: %d\n", curr_proccess->getRank(), this->vehicles[i]->getId(), curr_proccess->getNextRank());
                 }
@@ -90,11 +93,6 @@ int Simulation::run_simulation(MpiProcess *curr_proccess) {
             }
             // empty the vector
             vehicles_to_send.clear();
-
-            printf("Rank %d: After sending, my vehicles are:\n", curr_proccess->getRank());
-            for(int i = 0; i < (int)this->vehicles.size(); i++){
-                printf("ID: %d, Position: %d, Speed: %d\n", this->vehicles[i]->getId(), this->vehicles[i]->getPosition(), this->vehicles[i]->getSpeed());
-            }
         }
         
         // Receive the vehicles from the previous process (if this is not process 0)
@@ -107,20 +105,8 @@ int Simulation::run_simulation(MpiProcess *curr_proccess) {
                     this->road_ptr->attemptSpawn(i, curr_proccess->getStartPosition(), vehicle, &(this->vehicles));
                 }
             }
-
-            printf("My vehicles after spawning are: ");
-            for (auto vehicle : this->vehicles) {
-                printf("Id: %d, Position: %d, Speed: %d\n", vehicle->getId(), vehicle->getPosition(), vehicle->getSpeed());
-            }
-            printf("\n");
         }
        
-        if(curr_proccess->getRank() == 1 && this->vehicles.size() > 0){
-            for(int i = 0; i < (int)this->vehicles.size(); i++){
-                printf("IDd: %d, Position: %d, Speed: %d\n", this->vehicles[i]->getId(), this->vehicles[i]->getPosition(), this->vehicles[i]->getSpeed());
-            }
-        }
-
         // Perform the lane switch step for all vehicles
         for (int n = 0; n < (int) this->vehicles.size(); n++) {
             if(curr_proccess->getRank() == 1){
@@ -137,8 +123,10 @@ int Simulation::run_simulation(MpiProcess *curr_proccess) {
         }
 
 #ifdef DEBUG
-        this->road_ptr->printRoad();
-        std::cout << "performing lane movements..." << std::endl;
+        if(vehicles.size() > 0){
+            this->road_ptr->printRoad();
+            std::cout << "performing lane movements..." << std::endl;
+        }
 #endif
 
         // Perform the independent lane updates
@@ -179,8 +167,6 @@ int Simulation::run_simulation(MpiProcess *curr_proccess) {
             // Spawn new Vehicles
             this->road_ptr->attemptSpawn(this->inputs, &(this->vehicles), &(this->next_id));
         }
-
-        // this->road_ptr->attemptSpawn(this->inputs, &(this->vehicles), &(this->next_id));
     }
 
     // Print the total run time and average iterations per second and seconds per iteration

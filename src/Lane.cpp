@@ -125,11 +125,11 @@ int Lane::attemptSpawn(Inputs inputs, std::vector<Vehicle*>* vehicles, int* next
 int Lane::attemptSpawn(int starting_site, Vehicle* vehicle_ptr, std::vector<Vehicle*>* vehicles) {
     int attempted_position = vehicle_ptr->getPosition() + vehicle_ptr->getSpeed();
     printf("Attempting to spawn at %d\n", attempted_position);
-    if (!this->hasVehicleInSite(attempted_position)) {
+    if (attempted_position < (int) this->getSites().size() 
+                                && !this->hasVehicleInSite(attempted_position)) {
         // Spawn Vehicle
         vehicle_ptr->setLanePtr(this);
         vehicle_ptr->setPosition(attempted_position);
-        
         this->sites[attempted_position].push_front(vehicle_ptr);
         vehicles->push_back(this->sites[attempted_position].front());
     }
