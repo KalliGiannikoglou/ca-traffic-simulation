@@ -129,9 +129,13 @@ int Lane::attemptSpawn(int starting_site, Vehicle* vehicle_ptr, std::vector<Vehi
                                 && !this->hasVehicleInSite(attempted_position)) {
         // Spawn Vehicle
         vehicle_ptr->setLanePtr(this);
-        vehicle_ptr->setPosition(attempted_position);
-        this->sites[attempted_position].push_front(vehicle_ptr);
-        vehicles->push_back(this->sites[attempted_position].front());
+        // vehicle_ptr->setPosition(attempted_position);
+        // this->sites[attempted_position].push_front(vehicle_ptr);
+        // vehicles->push_back(this->sites[attempted_position].front());
+
+        // vehicle_ptr->setPosition(attempted_position);
+        this->sites[vehicle_ptr->getPosition()].push_front(vehicle_ptr);
+        vehicles->push_back(this->sites[vehicle_ptr->getPosition()].front());
     }
     // Return with no error
     return 0;

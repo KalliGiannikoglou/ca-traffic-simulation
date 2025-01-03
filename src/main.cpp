@@ -37,6 +37,9 @@ int main(int argc, char** argv) {
 
     curr_process->divideRoad(inputs.length);
 
+    // Synchronize all processes here
+    MPI_Barrier(MPI_COMM_WORLD);
+
     // Run the Simulation
     simulation_ptr->run_simulation(curr_process);
 

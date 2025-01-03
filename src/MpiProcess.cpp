@@ -169,7 +169,7 @@ bool MpiProcess::allowSending(std::vector<Vehicle *>& vehicles, std::vector<Vehi
         // check for vehicles of the same lane 
         if(vehicles[i]->getLanePtr()->getLaneNumber() == newVehicle->getLanePtr()->getLaneNumber()){
             if(vehicles[i]->getPosition() > newVehicle->getPosition() && !newVehicle->isInList(vehicles_to_send)){
-            return false;
+                return false;
             }
         }
     }

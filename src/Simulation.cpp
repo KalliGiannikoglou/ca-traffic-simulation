@@ -152,6 +152,7 @@ int Simulation::run_simulation(MpiProcess *curr_proccess) {
         // Remove finished vehicles
         std::sort(vehicles_to_remove.begin(), vehicles_to_remove.end());
         for (int i = vehicles_to_remove.size() - 1; i >= 0; i--) {
+            printf("Process %d, vehicles to remove: %d\n", curr_proccess->getRank(), this->vehicles[vehicles_to_remove[i]]->getId());
             // Update travel time statistic if beyond warm-up period
             if (this->time > this->inputs.warmup_time) {
                 this->travel_time->addValue(this->vehicles[vehicles_to_remove[i]]->getTravelTime(this->inputs));
@@ -167,15 +168,22 @@ int Simulation::run_simulation(MpiProcess *curr_proccess) {
             // Spawn new Vehicles
             this->road_ptr->attemptSpawn(this->inputs, &(this->vehicles), &(this->next_id));
         }
+
+        printf("Process %d, time: %d\n", curr_proccess->getRank(), this->time);
+        for(auto &vehicle: this->vehicles){
+            printf("Process %d, vehicle %d, position: %d, speed: %d\n", curr_proccess->getRank(), vehicle->getId(), vehicle->getPosition(), vehicle->getSpeed());
+        }
+
+        MPI_Barrier(MPI_COMM_WORLD);
     }
 
     // Print the total run time and average iterations per second and seconds per iteration
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
     auto time_elapsed = (std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count()) /1000000.0;
     std::cout << "--- Simulation Performance ---" << std::endl;
-    std::cout << "total computation time: " << time_elapsed << " [s]" << std::endl;
-    std::cout << "average time per iteration: " << time_elapsed / inputs.max_time << " [s]" << std::endl;
-    std::cout << "average iterating frequency: " << inputs.max_time / time_elapsed << " [iter/s]" << std::endl;
+    std::cout << "Process : " << curr_proccess->getRank() << " total computation time: " << time_elapsed << " [s]" << std::endl;
+    std::cout << "Process : " << curr_proccess->getRank() << " average time per iteration: " << time_elapsed / inputs.max_time << " [s]" << std::endl;
+    std::cout << "Process : " << curr_proccess->getRank() << " average iterating frequency: " << inputs.max_time / time_elapsed << " [iter/s]" << std::endl;
 
 #ifdef DEBUG
     // Print final road configuration
@@ -185,7 +193,7 @@ int Simulation::run_simulation(MpiProcess *curr_proccess) {
 
     // Print the average Vehicle time on the Road
     std::cout << "--- Simulation Results ---" << std::endl;
-    std::cout << "time on road: avg=" << this->travel_time->getAverage() << ", std="
+    std::cout << "Process : " << curr_proccess->getRank()<< " time on road: avg=" << this->travel_time->getAverage() << ", std="
               << pow(this->travel_time->getVariance(), 0.5) << ", N=" << this->travel_time->getNumSamples()
               << std::endl;
 
