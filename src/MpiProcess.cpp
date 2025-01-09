@@ -191,8 +191,9 @@ std::vector<int> MpiProcess::recvLastVehicles(){
 }
 
 /**
-* Receive the last two vehicles of the next process (one from each lane)
-* @return the vector of index of the last two vehicles
+* Send the last two vehicles to the next process (one from each lane)
+* @param lanes pointer in the two lanes of the road
+* @return 
 */
 void MpiProcess::sendLastVehicles(std::vector<Lane*> lanes){
     std::vector<int> index_last_vehicles = {-1, -1};
@@ -208,6 +209,40 @@ void MpiProcess::sendLastVehicles(std::vector<Lane*> lanes){
     }
 
     MPI_Send(index_last_vehicles.data(), 2, MPI_INT, this->getPrevRank(), 50, MPI_COMM_WORLD);
+    return;
+}
+
+/**
+* Receive the first two vehicles of the prev process (one from each lane)
+* @return the vector of index of the first two vehicles
+*/
+std::vector<int> MpiProcess::recvFirstVehicles(){
+    
+    std::vector<int> index_first_vehicles(2);
+
+    MPI_Recv(index_first_vehicles.data(), 2, MPI_INT, this->getPrevRank(), 50, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    return index_first_vehicles;
+}
+
+/**
+* Send the first two vehicles to the next process (one from each lane), or -1 if road is empty
+* @param lanes pointer in the two lanes of the road
+* @return 
+*/
+void MpiProcess::sendFirstVehicles(std::vector<Lane*> lanes){
+    std::vector<int> index_first_vehicles = {-1, -1};
+
+    for(int i = 0; i < (int)lanes.size(); i++){
+        std::vector<std::deque<Vehicle *>> sites = lanes[i]->getSites();
+        for(int j = 0; j < (int)sites.size(); j++){
+            if(lanes[i]->hasVehicleInSite(j)){
+                index_first_vehicles[i] = j;
+                break;
+            }
+        }
+    }
+
+    MPI_Send(index_first_vehicles.data(), 2, MPI_INT, this->getNextRank(), 50, MPI_COMM_WORLD);
     return;
 }
 

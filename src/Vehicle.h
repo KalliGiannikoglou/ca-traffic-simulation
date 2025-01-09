@@ -38,7 +38,8 @@ public:
     Vehicle(){}
     Vehicle(Lane* lane_ptr, int id, int initial_position, Inputs inputs);
     ~Vehicle();
-    int updateGaps(Road* road_ptr, int end_position, std::vector<int> last_vehicles);
+    int updateGaps(Road* road_ptr, int start_postition, int end_position,
+                        std::vector<int> first_vehicles, std::vector<int> last_vehicles);
     int performLaneSwitch(Road* road_ptr);
     int performLaneMove();
     int getId();

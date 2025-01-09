@@ -60,7 +60,8 @@ Vehicle::~Vehicle() {}
  * @return 0 if successful, nonzero otherwise
 
  */
-int Vehicle::updateGaps(Road* road_ptr, int end_position ,std::vector<int> last_vehicles) {
+int Vehicle::updateGaps(Road* road_ptr, int start_postition, int end_position,
+                         std::vector<int> first_vehicles, std::vector<int> last_vehicles) {
     // Locate the preceding Vehicle and update the forward gap
     this->gap_forward = this->lane_ptr->getSize() - 1;
     for (int i = this->position + 1; i <= end_position; i++) {
@@ -68,6 +69,9 @@ int Vehicle::updateGaps(Road* road_ptr, int end_position ,std::vector<int> last_
             this->gap_forward = i - this->position - 1;
             break;
         }
+        // if last position is reached and there is not a vehicle, 
+        // and if the lane pointer of our lane is not -1 (so, there is a vehicle in our lane)
+        // update the gap based on the vehicle ahead
         if(i == end_position && last_vehicles[this->lane_ptr->getLaneNumber()] != -1){
             this->gap_forward = last_vehicles[this->lane_ptr->getLaneNumber()] - this->position - 1;
             printf("vehicle %d, gap_forward: %d\n", this->id, this->gap_forward);
@@ -94,6 +98,9 @@ int Vehicle::updateGaps(Road* road_ptr, int end_position ,std::vector<int> last_
             this->gap_other_forward = i - this->position - 1;
             break;
         }
+        // if last position is reached and there is not a vehicle, 
+        // and if the lane pointer of the other lane is not -1 (so, there is a vehicle in the other lane)
+        // update the gap based on the vehicle ahead
         if(i == end_position && last_vehicles[other_lane_ptr->getLaneNumber()] != -1){
             this->gap_forward = last_vehicles[other_lane_ptr->getLaneNumber()] - this->position - 1;
             printf("vehicle %d, gap_forward: %d\n", this->id, this->gap_forward);
@@ -103,9 +110,16 @@ int Vehicle::updateGaps(Road* road_ptr, int end_position ,std::vector<int> last_
 
     // Update the backward gap in the other lane
     this->gap_other_backward = this->lane_ptr->getSize() - 1;
-    for (int i = this->position; i >= 0; i--) {
+    for (int i = this->position; i >= start_postition; i--) {
         if (other_lane_ptr->hasVehicleInSite(i)) {
             this->gap_other_backward = this->position - i - 1;
+            break;
+        }
+        // if starting position is reached and there is not a vehicle there, 
+        // and if the  other lane pointer of our lane is not -1 (so, there is a vehicle in lane)
+        // update the backward gap based on the vehicle behind
+        if(i == start_postition && first_vehicles[other_lane_ptr->getLaneNumber()] != -1){
+            this->gap_other_backward = this->position - first_vehicles[other_lane_ptr->getLaneNumber()] - 1;
             break;
         }
     }

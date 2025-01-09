@@ -23,12 +23,14 @@ private:
     Inputs inputs;
     int next_id;
     Statistic* travel_time;
+    std::vector<Vehicle *> vehicles_to_send;
+
 public:
     Simulation(Inputs inputs);
     ~Simulation();
     int run_simulation(MpiProcess *curr_process);
-    void sendVehicles(std::vector<Vehicle *> vehicles_to_send, MpiProcess *curr_proccess);
-    void receiveVehicles(std::vector<Vehicle *> vehicles_to_send, MpiProcess *curr_proccess);
+    void sendVehicles(MpiProcess *curr_proccess);
+    void receiveVehicles(MpiProcess *curr_proccess);
 };
 
 
