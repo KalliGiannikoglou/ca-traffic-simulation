@@ -34,11 +34,11 @@ class MpiProcess{
 
         void defineMpiVehicle();
         void divideRoad(int road_length);
-        void sendVehicle(std::vector<Vehicle *>& vehicles, int destProcess);
-        std::vector<std::vector<Vehicle *>> receiveVehicle(int srcProcess);
+        void sendVehicle(std::vector<Vehicle *>& vehicles);
+        std::vector<std::vector<Vehicle *>> receiveVehicle();
         bool allowSending(std::vector<Vehicle *>& vehicles, std::vector<Vehicle *>& vehicles_to_send, Vehicle *newVehicle);
-
-
+        std::vector<int> recvLastVehicles();
+        void sendLastVehicles(std::vector<Lane*> lanes);
 };
 
 #endif

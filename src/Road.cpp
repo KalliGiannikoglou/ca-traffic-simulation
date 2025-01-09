@@ -63,10 +63,10 @@ int Road::attemptSpawn(Inputs inputs, std::vector<Vehicle*>* vehicles, int* next
     return 0;
 }
 
-int Road::attemptSpawn(int lane_num, int starting_site, Vehicle* vehicle_ptr, std::vector<Vehicle*>* vehicles) {
-   
-    this->lanes[lane_num]->attemptSpawn(starting_site, vehicle_ptr, vehicles);
-    return 0;
+int Road::attemptSpawn(int lane_num, Vehicle* vehicle_ptr, std::vector<Vehicle*>* vehicles) {
+    printf("Attempting to spawn vehicle %d in lane %d\n", vehicle_ptr->getId(), lane_num);
+    return this->lanes[lane_num]->attemptSpawn(vehicle_ptr, vehicles);
+    // return 0;
 }
 
 /**

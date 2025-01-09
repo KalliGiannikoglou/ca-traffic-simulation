@@ -38,7 +38,7 @@ public:
     Vehicle(){}
     Vehicle(Lane* lane_ptr, int id, int initial_position, Inputs inputs);
     ~Vehicle();
-    int updateGaps(Road* road_ptr);
+    int updateGaps(Road* road_ptr, int end_position, std::vector<int> last_vehicles);
     int performLaneSwitch(Road* road_ptr);
     int performLaneMove();
     int getId();
@@ -49,6 +49,7 @@ public:
     Lane *getLanePtr();
     void setLanePtr(Lane* lane_ptr);
     void setPosition(int position);
+    void setId(int id);
 
     bool isInList(std::vector<Vehicle *>& vehicles);
 

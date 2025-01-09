@@ -27,6 +27,8 @@ public:
     Simulation(Inputs inputs);
     ~Simulation();
     int run_simulation(MpiProcess *curr_process);
+    void sendVehicles(std::vector<Vehicle *> vehicles_to_send, MpiProcess *curr_proccess);
+    void receiveVehicles(std::vector<Vehicle *> vehicles_to_send, MpiProcess *curr_proccess);
 };
 
 

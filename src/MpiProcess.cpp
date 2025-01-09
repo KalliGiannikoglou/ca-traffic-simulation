@@ -108,24 +108,24 @@ void MpiProcess::defineMpiVehicle(){
 }
 
 // send all the vehicles that are about to cross the thresold
-void MpiProcess::sendVehicle(std::vector<Vehicle *>& vehicles_to_send, int destProcess){
+void MpiProcess::sendVehicle(std::vector<Vehicle *>& vehicles_to_send){
     int size = vehicles_to_send.size();
-    MPI_Send(&size, 1, MPI_INT, destProcess, 50, MPI_COMM_WORLD);
+    MPI_Send(&size, 1, MPI_INT, this->getNextRank(), 50, MPI_COMM_WORLD);
     for(auto &vehicle: vehicles_to_send){
         int lane_number = vehicle->getLanePtr()->getLaneNumber();
-        MPI_Send(&lane_number, 1, MPI_INT, destProcess, 100, MPI_COMM_WORLD);
-        MPI_Send(vehicle, 1, this->mpi_vehicle, destProcess, 10, MPI_COMM_WORLD);
+        MPI_Send(&lane_number, 1, MPI_INT, this->getNextRank(), 100, MPI_COMM_WORLD);
+        MPI_Send(vehicle, 1, this->mpi_vehicle, this->getNextRank(), 10, MPI_COMM_WORLD);
     }
-    printf("Process: %d, sent %d vehicles to process: %d\n", this->getRank(), size, destProcess);
+    printf("Process: %d, sent %d vehicles to process: %d\n", this->getRank(), size, this->getNextRank());
     for(int i = 0; i < size; i++){
         printf("ID: %d, Position: %d, Speed: %d, in Lane: %d\n", vehicles_to_send[i]->getId(), vehicles_to_send[i]->getPosition(), vehicles_to_send[i]->getSpeed(), vehicles_to_send[i]->getLanePtr()->getLaneNumber());
     }
 }
 
 // receive all the vehicles that are about to cross the theshold
-std::vector<std::vector<Vehicle*>> MpiProcess::receiveVehicle(int srcProcess) {
+std::vector<std::vector<Vehicle*>> MpiProcess::receiveVehicle() {
     int size;
-    MPI_Recv(&size, 1, MPI_INT, srcProcess, 50, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    MPI_Recv(&size, 1, MPI_INT, this->getPrevRank(), 50, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
     // Create 2 lists for lanes 0 and 1
     std::vector<std::vector<Vehicle*>> vehicles_to_recv(2);
@@ -135,17 +135,18 @@ std::vector<std::vector<Vehicle*>> MpiProcess::receiveVehicle(int srcProcess) {
             int lane_num;
 
             // Receive the lane number
-            MPI_Recv(&lane_num, 1, MPI_INT, srcProcess, 100, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Recv(&lane_num, 1, MPI_INT, this->getPrevRank(), 100, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
             // Dynamically allocate a Vehicle object
             Vehicle* vehicle = new Vehicle();
 
             // Receive the vehicle data
-            MPI_Recv(vehicle, 1, this->mpi_vehicle, srcProcess, 10, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Recv(vehicle, 1, this->mpi_vehicle, this->getPrevRank(), 10, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-            // Place the dynamically allocated vehicle in the appropriate list (0 or 1 for lane_num)
+            // Place the new vehicle in the appropriate list (0 or 1 for lane_num)
             if (lane_num == 0 || lane_num == 1) {
                 vehicles_to_recv[lane_num].push_back(vehicle);
+                printf("Process: %d, received vehicle: %d, speed: %d, position: %d\n", this->getRank(), vehicle->getId(), vehicle->getSpeed(), vehicle->getPosition());
             } else {
                 printf("Received unexpected lane_num %d\n", lane_num);
                 delete vehicle; // Clean up the dynamically allocated object
@@ -168,11 +169,45 @@ bool MpiProcess::allowSending(std::vector<Vehicle *>& vehicles, std::vector<Vehi
     for(int i = 0; i < (int)vehicles.size(); i++){
         // check for vehicles of the same lane 
         if(vehicles[i]->getLanePtr()->getLaneNumber() == newVehicle->getLanePtr()->getLaneNumber()){
-            if(vehicles[i]->getPosition() > newVehicle->getPosition() && !newVehicle->isInList(vehicles_to_send)){
+            if(vehicles[i]->getPosition() > newVehicle->getPosition() && !vehicles[i]->isInList(vehicles_to_send)){
                 return false;
             }
         }
     }
     return true;
+}
+
+
+/**
+* Receive the last two vehicles of the next process (one from each lane)
+* @return the vector of index of the last two vehicles
+*/
+std::vector<int> MpiProcess::recvLastVehicles(){
+    
+    std::vector<int> index_last_vehicles(2);
+
+    MPI_Recv(index_last_vehicles.data(), 2, MPI_INT, this->getNextRank(), 50, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    return index_last_vehicles;
+}
+
+/**
+* Receive the last two vehicles of the next process (one from each lane)
+* @return the vector of index of the last two vehicles
+*/
+void MpiProcess::sendLastVehicles(std::vector<Lane*> lanes){
+    std::vector<int> index_last_vehicles = {-1, -1};
+
+    for(int i = 0; i < (int)lanes.size(); i++){
+        std::vector<std::deque<Vehicle *>> sites = lanes[i]->getSites();
+        for(int j = (int)sites.size()-1; j >= 0; j--){
+            if(lanes[i]->hasVehicleInSite(j)){
+                index_last_vehicles[i] = j;
+                break;
+            }
+        }
+    }
+
+    MPI_Send(index_last_vehicles.data(), 2, MPI_INT, this->getPrevRank(), 50, MPI_COMM_WORLD);
+    return;
 }
 

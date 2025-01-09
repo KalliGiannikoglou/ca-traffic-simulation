@@ -60,12 +60,17 @@ Vehicle::~Vehicle() {}
  * @return 0 if successful, nonzero otherwise
 
  */
-int Vehicle::updateGaps(Road* road_ptr) {
+int Vehicle::updateGaps(Road* road_ptr, int end_position ,std::vector<int> last_vehicles) {
     // Locate the preceding Vehicle and update the forward gap
     this->gap_forward = this->lane_ptr->getSize() - 1;
-    for (int i = this->position + 1; i < this->lane_ptr->getSize(); i++) {
+    for (int i = this->position + 1; i <= end_position; i++) {
         if (this->lane_ptr->hasVehicleInSite(i)) {
             this->gap_forward = i - this->position - 1;
+            break;
+        }
+        if(i == end_position && last_vehicles[this->lane_ptr->getLaneNumber()] != -1){
+            this->gap_forward = last_vehicles[this->lane_ptr->getLaneNumber()] - this->position - 1;
+            printf("vehicle %d, gap_forward: %d\n", this->id, this->gap_forward);
             break;
         }
     }
@@ -84,9 +89,14 @@ int Vehicle::updateGaps(Road* road_ptr) {
 
     // Update the forward gap in the other lane
     this->gap_other_forward = this->lane_ptr->getSize() - 1;
-    for (int i = this->position; i < this->lane_ptr->getSize(); i++) {
+    for (int i = this->position; i <= end_position; i++) {
         if (other_lane_ptr->hasVehicleInSite(i)) {
             this->gap_other_forward = i - this->position - 1;
+            break;
+        }
+        if(i == end_position && last_vehicles[other_lane_ptr->getLaneNumber()] != -1){
+            this->gap_forward = last_vehicles[other_lane_ptr->getLaneNumber()] - this->position - 1;
+            printf("vehicle %d, gap_forward: %d\n", this->id, this->gap_forward);
             break;
         }
     }
@@ -275,10 +285,14 @@ void Vehicle::setPosition(int position){
 }
 
 bool Vehicle::isInList(std::vector<Vehicle *>& vehicles){
-    for(int i = 0; i < vehicles.size(); i++){
+    for(int i = 0; i < (int) vehicles.size(); i++){
         if(vehicles[i]->getId() == this->id){
             return true;
         }
     }
     return false;
+}
+
+void Vehicle::setId(int id){
+    this->id = id;
 }
