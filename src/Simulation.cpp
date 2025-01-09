@@ -233,25 +233,24 @@ void Simulation::receiveVehicles(MpiProcess *curr_proccess) {
     // Receive the vehicles that are about to cross the threshold
     std::vector<std::vector<Vehicle *>> vehicles_to_recv = curr_proccess->receiveVehicle();
 
-    std::vector<int> indices_to_remove;
-    // Check if some vehicles must be instanlty promoted to the next process
+    std::vector<Vehicle*> vehicles_to_remove;
+
     for (int i = 0; i < (int)vehicles_to_recv.size(); ++i) {
         for (auto* vehicle : vehicles_to_recv[i]) {
             if (vehicle->getPosition() + vehicle->getSpeed() > curr_proccess->getEndPosition()) {
-                // pseudo initialization of the lane pointer
                 vehicle->setLanePtr(this->road_ptr->getLanes()[i]);
                 this->vehicles_to_send.push_back(vehicle);
-                indices_to_remove.push_back(vehicle->getId()); 
+                vehicles_to_remove.push_back(vehicle); // Mark for removal
                 printf("Received vehicle %d and promoted it instantly\n", vehicle->getId());
             }
         }
     }
 
     // Remove the vehicles that are promoted to the next process
-    std::sort(indices_to_remove.rbegin(), indices_to_remove.rend());
-    for (int index : indices_to_remove) {
-        delete this->vehicles[index];
-        this->vehicles.erase(this->vehicles.begin() + index);
+    for (auto* vehicle : vehicles_to_remove) {
+        for (auto& lane_vehicles : vehicles_to_recv) {
+            lane_vehicles.erase(std::remove(lane_vehicles.begin(), lane_vehicles.end(), vehicle), lane_vehicles.end());
+        }
     }
 
     // Spawn the received vehicles in their proper positions
@@ -260,4 +259,7 @@ void Simulation::receiveVehicles(MpiProcess *curr_proccess) {
             this->road_ptr->attemptSpawn(i, vehicle, &(this->vehicles));
         }
     }
+
+  
+
 }
