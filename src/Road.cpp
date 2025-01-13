@@ -54,9 +54,9 @@ std::vector<Lane*> Road::getLanes() {
  * @param next_id_ptr pointer to the id of the next spawned Vehicle
  * @return 0 if successful, nonzero otherwise
  */
-int Road::attemptSpawn(Inputs inputs, std::vector<Vehicle*>* vehicles, int* next_id_ptr) {
+int Road::attemptSpawn(Inputs inputs, std::vector<Vehicle*>* vehicles, int* next_id_ptr, std::vector<int> last_vehicles) {
     for (int i = 0; i < (int) this->lanes.size(); i++) {
-        this->lanes[i]->attemptSpawn(inputs, vehicles, next_id_ptr, this->interarrival_time_cdf);
+        this->lanes[i]->attemptSpawn(inputs, vehicles, next_id_ptr, this->interarrival_time_cdf, last_vehicles);
     }
 
     // Return with no errors

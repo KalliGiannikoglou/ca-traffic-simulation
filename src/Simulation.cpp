@@ -70,17 +70,14 @@ int Simulation::run_simulation(MpiProcess *curr_proccess) {
 
         // Send the last vehicles to the previous process
         if(curr_proccess->getRank() != 0){
-            curr_proccess->sendLastVehicles(this->road_ptr->getLanes());
-        }
+            curr_proccess->sendLastVehicles(this->road_ptr->getLanes(), last_vehicles);
 
-        // Receive the last vehicles of the next process
-        if(curr_proccess->getRank() != 0){
             first_vehicles = curr_proccess->recvFirstVehicles();
         }
 
         // Send the last vehicles to the previous process
         if(curr_proccess->getRank() != curr_proccess->getNumOfProcesses()-1){
-            curr_proccess->sendFirstVehicles(this->road_ptr->getLanes());
+            curr_proccess->sendFirstVehicles(this->road_ptr->getLanes(), first_vehicles);
         }
 
 #ifdef DEBUG
@@ -150,7 +147,7 @@ int Simulation::run_simulation(MpiProcess *curr_proccess) {
 
         // If this is process 0, attempt to spawn new vehicles in the road
         if(curr_proccess->getRank() == 0){
-            this->road_ptr->attemptSpawn(this->inputs, &(this->vehicles), &(this->next_id));
+            this->road_ptr->attemptSpawn(this->inputs, &(this->vehicles), &(this->next_id), last_vehicles);
         }
 
          // Receive the vehicles from the previous process (if this is not process 0)
@@ -163,6 +160,11 @@ int Simulation::run_simulation(MpiProcess *curr_proccess) {
             sendVehicles(curr_proccess);
             // empty the vector
             this->vehicles_to_send.clear();
+        }
+
+        printf("Process: %d, my vehicles are: \n", curr_proccess->getRank());
+        for(int i = 0; i < (int)this->vehicles.size(); i++){
+            printf("Process: %d, vehicle %d is in position: %d\n", curr_proccess->getRank(), this->vehicles[i]->getId(), this->vehicles[i]->getPosition());
         }
        
         MPI_Barrier(MPI_COMM_WORLD); 
@@ -198,7 +200,7 @@ void Simulation::sendVehicles(MpiProcess *curr_proccess){
 
     for(int i = 0; i < (int)this->vehicles.size(); i++){
         // Check if the threshold will be exceeded and if the vehicle is allowed to be sent
-        if(this->vehicles[i]->getPosition()+ this->vehicles[i]->getSpeed() > curr_proccess->getEndPosition()
+        if(this->vehicles[i]->getPosition() + this->vehicles[i]->getSpeed() > curr_proccess->getEndPosition()
             && curr_proccess->allowSending(vehicles, this->vehicles_to_send, vehicles[i])){
             
             this->vehicles_to_send.push_back(this->vehicles[i]);
@@ -232,26 +234,33 @@ void Simulation::sendVehicles(MpiProcess *curr_proccess){
 void Simulation::receiveVehicles(MpiProcess *curr_proccess) {
     // Receive the vehicles that are about to cross the threshold
     std::vector<std::vector<Vehicle *>> vehicles_to_recv = curr_proccess->receiveVehicle();
-
-    std::vector<Vehicle*> vehicles_to_remove;
+    // unordered_set of vehicles to remove from curr process
+    std::vector<int> ids_to_remove;
 
     for (int i = 0; i < (int)vehicles_to_recv.size(); ++i) {
         for (auto* vehicle : vehicles_to_recv[i]) {
-            if (vehicle->getPosition() + vehicle->getSpeed() > curr_proccess->getEndPosition()) {
+            // if this is not the last process and the vehicle is about to cross the threshold
+            if (curr_proccess->getRank() != curr_proccess->getNumOfProcesses()-1 &&
+                vehicle->getPosition() + vehicle->getSpeed() > curr_proccess->getEndPosition()) {
+
                 vehicle->setLanePtr(this->road_ptr->getLanes()[i]);
                 this->vehicles_to_send.push_back(vehicle);
-                vehicles_to_remove.push_back(vehicle); // Mark for removal
+                // Store id of vehicle to remove
+                ids_to_remove.push_back(vehicle->getId());
                 printf("Received vehicle %d and promoted it instantly\n", vehicle->getId());
             }
         }
     }
 
-    // Remove the vehicles that are promoted to the next process
-    for (auto* vehicle : vehicles_to_remove) {
-        for (auto& lane_vehicles : vehicles_to_recv) {
-            lane_vehicles.erase(std::remove(lane_vehicles.begin(), lane_vehicles.end(), vehicle), lane_vehicles.end());
+    for(int i=0; i < (int)vehicles_to_recv.size(); i++){
+        for(int j=0; j < (int)vehicles_to_recv[i].size(); j++){
+            if(isInVector(vehicles_to_recv[i][j]->getId(), ids_to_remove)){
+                // delete vehicles_to_recv[i][j];
+                vehicles_to_recv[i].erase(vehicles_to_recv[i].begin() + j);
+            }
         }
     }
+
 
     // Spawn the received vehicles in their proper positions
     for(int i = 0; i < (int)vehicles_to_recv.size(); i++){
@@ -259,7 +268,9 @@ void Simulation::receiveVehicles(MpiProcess *curr_proccess) {
             this->road_ptr->attemptSpawn(i, vehicle, &(this->vehicles));
         }
     }
+}
 
-  
 
+bool Simulation::isInVector(int value, const std::vector<int>& vec) {
+    return std::find(vec.begin(), vec.end(), value) != vec.end();
 }

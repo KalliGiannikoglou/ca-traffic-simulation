@@ -73,7 +73,7 @@ int Vehicle::updateGaps(Road* road_ptr, int start_postition, int end_position,
         // and if the lane pointer of our lane is not -1 (so, there is a vehicle in our lane)
         // update the gap based on the vehicle ahead
         if(i == end_position && last_vehicles[this->lane_ptr->getLaneNumber()] != -1){
-            this->gap_forward = last_vehicles[this->lane_ptr->getLaneNumber()] - this->position - 1;
+            this->gap_forward = std::max(last_vehicles[this->lane_ptr->getLaneNumber()] - this->position - 1, 0);
             printf("vehicle %d, gap_forward: %d\n", this->id, this->gap_forward);
             break;
         }
@@ -94,6 +94,12 @@ int Vehicle::updateGaps(Road* road_ptr, int start_postition, int end_position,
     // Update the forward gap in the other lane
     this->gap_other_forward = this->lane_ptr->getSize() - 1;
     for (int i = this->position; i <= end_position; i++) {
+        //if there is a vehicle in the other lane, in the same position as this vehicle
+        if(first_vehicles[other_lane_ptr->getLaneNumber()] == this->position){
+            this->gap_other_forward = i - this->position - 1;
+            break;
+        }
+
         if (other_lane_ptr->hasVehicleInSite(i)) {
             this->gap_other_forward = i - this->position - 1;
             break;
@@ -102,8 +108,8 @@ int Vehicle::updateGaps(Road* road_ptr, int start_postition, int end_position,
         // and if the lane pointer of the other lane is not -1 (so, there is a vehicle in the other lane)
         // update the gap based on the vehicle ahead
         if(i == end_position && last_vehicles[other_lane_ptr->getLaneNumber()] != -1){
-            this->gap_forward = last_vehicles[other_lane_ptr->getLaneNumber()] - this->position - 1;
-            printf("vehicle %d, gap_forward: %d\n", this->id, this->gap_forward);
+            this->gap_other_forward = std::max(last_vehicles[other_lane_ptr->getLaneNumber()] - this->position - 1, 0);
+            printf("vehicle %d, gap_other_forward: %d\n", this->id, this->gap_other_forward);
             break;
         }
     }
@@ -119,7 +125,7 @@ int Vehicle::updateGaps(Road* road_ptr, int start_postition, int end_position,
         // and if the  other lane pointer of our lane is not -1 (so, there is a vehicle in lane)
         // update the backward gap based on the vehicle behind
         if(i == start_postition && first_vehicles[other_lane_ptr->getLaneNumber()] != -1){
-            this->gap_other_backward = this->position - first_vehicles[other_lane_ptr->getLaneNumber()] - 1;
+            this->gap_other_backward = std::max(this->position - first_vehicles[other_lane_ptr->getLaneNumber()] - 1, 0);
             break;
         }
     }

@@ -94,9 +94,9 @@ int Lane::removeVehicle(int site) {
  * @param interarrival_time_cdf CDF of the Vehicle interarrival times
  * @return
  */
-int Lane::attemptSpawn(Inputs inputs, std::vector<Vehicle*>* vehicles, int* next_id_ptr, CDF* interarrival_time_cdf) {
+int Lane::attemptSpawn(Inputs inputs, std::vector<Vehicle*>* vehicles, int* next_id_ptr, CDF* interarrival_time_cdf, std::vector<int> last_vehicles) {
     if (this->steps_to_spawn == 0) {
-        if (!this->hasVehicleInSite(0)) {
+        if (!this->hasVehicleInSite(0) && !last_vehicles[this->lane_num] == 0) {
             // Spawn Vehicle
 #ifdef DEBUG
             std::cout << "creating vehicle " << (*next_id_ptr) << " in lane " << this->lane_num << " at site " << 0

@@ -38,9 +38,9 @@ class MpiProcess{
         std::vector<std::vector<Vehicle *>> receiveVehicle();
         bool allowSending(std::vector<Vehicle *>& vehicles, std::vector<Vehicle *>& vehicles_to_send, Vehicle *newVehicle);
         std::vector<int> recvLastVehicles();
-        void sendLastVehicles(std::vector<Lane*> lanes);
+        void sendLastVehicles(std::vector<Lane*> lanes, std::vector<int> prev_process_indices);
         std::vector<int> recvFirstVehicles();
-        void sendFirstVehicles(std::vector<Lane*> lanes);
+        void sendFirstVehicles(std::vector<Lane*> lanes, std::vector<int> next_process_indices);
 };
 
 #endif
