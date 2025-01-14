@@ -62,3 +62,11 @@ double Statistic::getVariance() {
 int Statistic::getNumSamples() {
     return this->values.size();
 }
+
+/**
+ * Gets the samples that have been added to the Statistic
+ * @return all the samples in the Statistic
+ */
+std::vector<double> Statistic::getValues() {
+    return this->values;
+}

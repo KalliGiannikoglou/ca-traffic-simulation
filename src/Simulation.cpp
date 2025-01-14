@@ -185,11 +185,19 @@ int Simulation::run_simulation(MpiProcess *curr_proccess) {
     this->road_ptr->printRoad();
 #endif
 
-    // Print the average Vehicle time on the Road
-    std::cout << "--- Simulation Results ---" << std::endl;
-    std::cout << "Process : " << curr_proccess->getRank()<< " time on road: avg=" << this->travel_time->getAverage() << ", std="
-              << pow(this->travel_time->getVariance(), 0.5) << ", N=" << this->travel_time->getNumSamples()
-              << std::endl;
+    // if this is the last process, then receive the statistics from all the other processes
+    if(curr_proccess->getRank() == curr_proccess->getNumOfProcesses() - 1){
+        recvStatistics(curr_proccess);
+
+        // Print the average Vehicle time on the Road
+        std::cout << "--- Simulation Results ---" << std::endl;
+        std::cout << "Process : " << curr_proccess->getRank()<< " time on road: avg=" << this->travel_time->getAverage() << ", std="
+                << pow(this->travel_time->getVariance(), 0.5) << ", N=" << this->travel_time->getNumSamples()
+                << std::endl;
+
+    }else{
+        sendStatistics(curr_proccess);
+    }
 
     // Return with no errors
     return 0;
@@ -273,4 +281,46 @@ void Simulation::receiveVehicles(MpiProcess *curr_proccess) {
 
 bool Simulation::isInVector(int value, const std::vector<int>& vec) {
     return std::find(vec.begin(), vec.end(), value) != vec.end();
+}
+
+/**
+ * @brief if curr process has statistics (it was the last process of some vehicles)
+ * send the stats in the final process 
+ * 
+ * @param curr_proccess pointer to the current process 
+ * @param stats vector of doubles with the time spent on the road of the vehicles 
+ * that terminated in the current process
+ */
+void Simulation::sendStatistics(MpiProcess *curr_proccess){
+    
+    int dest_process = curr_proccess->getNumOfProcesses()-1;
+    std::vector<double> stats = this->travel_time->getValues();
+    int size = stats.size();
+    MPI_Send(&size, 1, MPI_INT, dest_process, 0, MPI_COMM_WORLD);
+
+    if(!stats.empty()){
+        MPI_Send(stats.data(), stats.size(), MPI_DOUBLE, dest_process, 0, MPI_COMM_WORLD);
+    }
+}
+
+/**
+ * @brief If this is the last process, 
+ * receive all the statistics from the previous processes
+ * @param curr_proccess pointer to the current process 
+ */
+void Simulation::recvStatistics(MpiProcess *curr_proccess){
+
+    for(int i = 0; i < curr_proccess->getNumOfProcesses()-2; i++){
+        int size;
+        MPI_Recv(&size, 1, MPI_INT, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+        if(size > 0){
+            std::vector<double> stats(size);
+            MPI_Recv(stats.data(), size, MPI_DOUBLE, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            for(int j = 0; j < size; j++){
+                this->travel_time->addValue(stats[j]);
+            }
+        }
+    }
+    
 }

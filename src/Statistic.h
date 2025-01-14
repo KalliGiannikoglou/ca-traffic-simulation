@@ -21,6 +21,7 @@ public:
     double getAverage();
     double getVariance();
     int getNumSamples();
+    std::vector<double> getValues();
 };
 
 
