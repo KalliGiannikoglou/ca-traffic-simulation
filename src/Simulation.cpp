@@ -133,7 +133,6 @@ int Simulation::run_simulation(MpiProcess *curr_proccess) {
         // Remove finished vehicles
         std::sort(vehicles_to_remove.begin(), vehicles_to_remove.end());
         for (int i = vehicles_to_remove.size() - 1; i >= 0; i--) {
-            printf("Process %d, vehicles to remove: %d\n", curr_proccess->getRank(), this->vehicles[vehicles_to_remove[i]]->getId());
             // Update travel time statistic if beyond warm-up period
             if (this->time > this->inputs.warmup_time) {
                 this->travel_time->addValue(this->vehicles[vehicles_to_remove[i]]->getTravelTime(this->inputs));
@@ -162,10 +161,12 @@ int Simulation::run_simulation(MpiProcess *curr_proccess) {
             this->vehicles_to_send.clear();
         }
 
+#ifdef DEBUG
         printf("Process: %d, my vehicles are: \n", curr_proccess->getRank());
         for(int i = 0; i < (int)this->vehicles.size(); i++){
             printf("Process: %d, vehicle %d is in position: %d\n", curr_proccess->getRank(), this->vehicles[i]->getId(), this->vehicles[i]->getPosition());
         }
+#endif
        
         MPI_Barrier(MPI_COMM_WORLD); 
             
@@ -212,7 +213,9 @@ void Simulation::sendVehicles(MpiProcess *curr_proccess){
             && curr_proccess->allowSending(vehicles, this->vehicles_to_send, vehicles[i])){
             
             this->vehicles_to_send.push_back(this->vehicles[i]);
+#ifdef DEBUG
             printf("Process: %d, sending vehicle %d to process: %d\n", curr_proccess->getRank(), this->vehicles[i]->getId(), curr_proccess->getNextRank());
+#endif
         }
     }
 
@@ -224,7 +227,6 @@ void Simulation::sendVehicles(MpiProcess *curr_proccess){
     for (int i = 0; i < (int) this->vehicles_to_send.size(); i++) {
         for (int j = 0; j < (int) this->vehicles.size(); j++) {
             if (this->vehicles[j]->getId() == this->vehicles_to_send[i]->getId()) {
-                printf("Process: %d, deleting vehicle %d\n", curr_proccess->getRank(), this->vehicles[j]->getId());
                 this->vehicles[j]->getLanePtr()->removeVehicle(this->vehicles[j]->getPosition());
                 indices_to_remove.push_back(j);
             }
@@ -255,7 +257,9 @@ void Simulation::receiveVehicles(MpiProcess *curr_proccess) {
                 this->vehicles_to_send.push_back(vehicle);
                 // Store id of vehicle to remove
                 ids_to_remove.push_back(vehicle->getId());
+#ifdef DEBUG
                 printf("Received vehicle %d and promoted it instantly\n", vehicle->getId());
+#endif
             }
         }
     }

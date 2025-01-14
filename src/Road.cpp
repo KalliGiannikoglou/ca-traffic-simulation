@@ -64,7 +64,9 @@ int Road::attemptSpawn(Inputs inputs, std::vector<Vehicle*>* vehicles, int* next
 }
 
 int Road::attemptSpawn(int lane_num, Vehicle* vehicle_ptr, std::vector<Vehicle*>* vehicles) {
+#ifdef DEBUG
     printf("Attempting to spawn vehicle %d in lane %d\n", vehicle_ptr->getId(), lane_num);
+#endif
     return this->lanes[lane_num]->attemptSpawn(vehicle_ptr, vehicles);
     // return 0;
 }

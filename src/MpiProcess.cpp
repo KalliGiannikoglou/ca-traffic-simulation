@@ -34,7 +34,6 @@ MpiProcess::MpiProcess(int argc, char **argv){
     else
         this->next_rank = this->rank + 1;
 
-    printf("My prev rank is: %d and my next rank is: %d\n", this->prev_rank, this->next_rank);
     this->defineMpiVehicle();
 }
 
@@ -78,8 +77,9 @@ void MpiProcess::divideRoad(int road_length){
 
     this->road_start = temp_start;
     this->road_end = temp_end - 1;
+#ifdef DEBUG
     printf("Process: %d, my road start: %d, my road end: %d\n", this->getRank(), this->road_start, this->road_end);
-
+#endif
 }
 
 void MpiProcess::defineMpiVehicle(){
@@ -116,10 +116,12 @@ void MpiProcess::sendVehicle(std::vector<Vehicle *>& vehicles_to_send){
         MPI_Send(&lane_number, 1, MPI_INT, this->getNextRank(), 100, MPI_COMM_WORLD);
         MPI_Send(vehicle, 1, this->mpi_vehicle, this->getNextRank(), 10, MPI_COMM_WORLD);
     }
+#ifdef DEBUG
     printf("Process: %d, sent %d vehicles to process: %d\n", this->getRank(), size, this->getNextRank());
     for(int i = 0; i < size; i++){
         printf("ID: %d, Position: %d, Speed: %d, in Lane: %d\n", vehicles_to_send[i]->getId(), vehicles_to_send[i]->getPosition(), vehicles_to_send[i]->getSpeed(), vehicles_to_send[i]->getLanePtr()->getLaneNumber());
     }
+#endif
 }
 
 // receive all the vehicles that are about to cross the theshold
@@ -146,7 +148,9 @@ std::vector<std::vector<Vehicle*>> MpiProcess::receiveVehicle() {
             // Place the new vehicle in the appropriate list (0 or 1 for lane_num)
             if (lane_num == 0 || lane_num == 1) {
                 vehicles_to_recv[lane_num].push_back(vehicle);
+#ifdef DEBUG
                 printf("Process: %d, received vehicle: %d, speed: %d, position: %d\n", this->getRank(), vehicle->getId(), vehicle->getSpeed(), vehicle->getPosition());
+#endif
             } else {
                 printf("Process: %d Received unexpected lane_num %d\n", this->getRank(),lane_num);
                 delete vehicle; // Clean up the dynamically allocated object
@@ -216,11 +220,13 @@ void MpiProcess::sendLastVehicles(std::vector<Lane*> lanes, std::vector<int> pre
     }
 
     MPI_Send(index_last_vehicles.data(), 2, MPI_INT, this->getPrevRank(), 50, MPI_COMM_WORLD);
+#ifdef DEBUG
     printf("process: %d, my last vehicles are in positions: ", this->getRank());
     for(int i : index_last_vehicles){
         printf("%d, ", i);
     }
     printf("\n");
+#endif
     return;
 }
 
@@ -261,11 +267,13 @@ void MpiProcess::sendFirstVehicles(std::vector<Lane*> lanes, std::vector<int> ne
     }
 
     MPI_Send(index_first_vehicles.data(), 2, MPI_INT, this->getNextRank(), 50, MPI_COMM_WORLD);
+#ifdef DEBUG    
     printf("process: %d, my first vehicles are in positions: ", this->getRank());
     for(int i : index_first_vehicles){
         printf("%d, ", i);
     }
     printf("\n");
+#endif    
     return;
 }
 

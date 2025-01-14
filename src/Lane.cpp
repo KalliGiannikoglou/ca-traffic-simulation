@@ -124,7 +124,9 @@ int Lane::attemptSpawn(Inputs inputs, std::vector<Vehicle*>* vehicles, int* next
 
 int Lane::attemptSpawn(Vehicle* vehicle_ptr, std::vector<Vehicle*>* vehicles) {
    
+#ifdef DEBUG
     printf("Attempting to spawn at %d\n", vehicle_ptr->getPosition());
+#endif
     if (!this->hasVehicleInSite(vehicle_ptr->getPosition())) {
         // Spawn Vehicle
         vehicle_ptr->setLanePtr(this);

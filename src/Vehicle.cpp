@@ -74,7 +74,9 @@ int Vehicle::updateGaps(Road* road_ptr, int start_postition, int end_position,
         // update the gap based on the vehicle ahead
         if(i == end_position && last_vehicles[this->lane_ptr->getLaneNumber()] != -1){
             this->gap_forward = std::max(last_vehicles[this->lane_ptr->getLaneNumber()] - this->position - 1, 0);
+#ifdef DEBUG           
             printf("vehicle %d, gap_forward: %d\n", this->id, this->gap_forward);
+#endif
             break;
         }
     }
@@ -109,7 +111,9 @@ int Vehicle::updateGaps(Road* road_ptr, int start_postition, int end_position,
         // update the gap based on the vehicle ahead
         if(i == end_position && last_vehicles[other_lane_ptr->getLaneNumber()] != -1){
             this->gap_other_forward = std::max(last_vehicles[other_lane_ptr->getLaneNumber()] - this->position - 1, 0);
+#ifdef DEBUG
             printf("vehicle %d, gap_other_forward: %d\n", this->id, this->gap_other_forward);
+#endif
             break;
         }
     }
