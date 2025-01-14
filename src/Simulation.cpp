@@ -168,7 +168,7 @@ int Simulation::run_simulation(MpiProcess *curr_proccess) {
         }
 #endif
        
-        MPI_Barrier(MPI_COMM_WORLD); 
+        // MPI_Barrier(MPI_COMM_WORLD); 
             
     }
 
