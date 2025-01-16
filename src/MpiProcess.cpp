@@ -182,6 +182,37 @@ bool MpiProcess::allowSending(std::vector<Vehicle *>& vehicles, std::vector<Vehi
     return true;
 }
 
+void MpiProcess::broadcastConfig(Config &config) {
+    if (this->rank == 0) {
+        // Load configuration using the Inputs class
+        Inputs inputs;
+        int status = inputs.loadFromFile();
+        if (status != 0) {
+            throw std::runtime_error("Failed to load configuration from cats-input.txt");
+        }
+
+        // Map the loaded inputs to the Config structure
+        config.length = inputs.length;
+        config.max_time = inputs.max_time;
+        config.warmup_time = inputs.warmup_time;
+        config.num_lanes = inputs.num_lanes;
+        config.length = inputs.length;
+        config.percent_full = inputs.percent_full;
+        config.max_speed = inputs.max_speed;
+        config.look_forward = inputs.look_forward;
+        config.look_other_forward = inputs.look_other_forward;
+        config.look_other_backward = inputs.look_other_backward;
+        config.prob_slow_down = inputs.prob_slow_down;
+        config.prob_change = inputs.prob_change;
+    }
+
+    // Broadcast the configuration to all processes
+    MPI_Bcast(&config, sizeof(Config), MPI_BYTE, 0, MPI_COMM_WORLD);
+
+    // After this point, all processes have the same configuration
+    printf("Process %d received config: road_length=%d, max_time=%d, warmup_time=%d",
+           this->rank, config.length, config.max_time, config.warmup_time);
+}
 
 /**
 * Receive the last two vehicles (smaller positions) of the next process (one from each lane)
