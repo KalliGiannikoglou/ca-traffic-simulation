@@ -196,7 +196,6 @@ void MpiProcess::broadcastConfig(Config &config) {
         config.max_time = inputs.max_time;
         config.warmup_time = inputs.warmup_time;
         config.num_lanes = inputs.num_lanes;
-        config.length = inputs.length;
         config.percent_full = inputs.percent_full;
         config.max_speed = inputs.max_speed;
         config.look_forward = inputs.look_forward;
