@@ -174,7 +174,9 @@ bool MpiProcess::allowSending(std::vector<Vehicle *>& vehicles, std::vector<Vehi
         // check for vehicles of the same lane 
         if(vehicles[i]->getLanePtr()->getLaneNumber() == newVehicle->getLanePtr()->getLaneNumber()){
             if(vehicles[i]->getPosition() > newVehicle->getPosition() && !vehicles[i]->isInList(vehicles_to_send)){
+#ifdef DEBUG
                printf("Cannot send %d because %d is ahead of it\n", newVehicle->getId(), vehicles[i]->getId());
+#endif
                return false;
             }
         }
@@ -182,10 +184,10 @@ bool MpiProcess::allowSending(std::vector<Vehicle *>& vehicles, std::vector<Vehi
     return true;
 }
 
-void MpiProcess::broadcastConfig(Config &config) {
+Inputs MpiProcess::broadcastConfig(Config &config) {
+    Inputs inputs;
     if (this->rank == 0) {
         // Load configuration using the Inputs class
-        Inputs inputs;
         int status = inputs.loadFromFile();
         if (status != 0) {
             throw std::runtime_error("Failed to load configuration from cats-input.txt");
@@ -208,10 +210,19 @@ void MpiProcess::broadcastConfig(Config &config) {
     // Broadcast the configuration to all processes
     MPI_Bcast(&config, sizeof(Config), MPI_BYTE, 0, MPI_COMM_WORLD);
 
-    // After this point, all processes have the same configuration
-    printf("Process %d received config: road_length=%d, max_time=%d, warmup_time=%d",
-           this->rank, config.length, config.max_time, config.warmup_time);
+    // Populate the inputs object on all processes
+    if (this->rank != 0) {
+        inputs = Inputs(config); 
+    }
+
+    // Debug: Print configuration on all processes
+#ifdef DEBUG
+    printf("Process %d received config: road_length=%d, max_time=%d, warmup_time=%d\n",
+           this->rank, inputs.length, inputs.max_time, inputs.warmup_time);
+#endif
+    return inputs;
 }
+
 
 /**
 * Receive the last two vehicles (smaller positions) of the next process (one from each lane)

@@ -26,11 +26,15 @@ int main(int argc, char** argv) {
     MpiProcess* curr_process = new MpiProcess(argc, argv);
 
     // Create an Inputs object to contain the simulation parameters
-    Inputs inputs = Inputs();
+    // Inputs inputs = Inputs();
 
-    if (inputs.loadFromFile() != 0) {
-        return 1;
-    }
+    // if (inputs.loadFromFile() != 0) {
+    //     return 1;
+    // }
+    
+    //Read the inputs from the file and broadcast them to all processes
+    Config config;
+    Inputs inputs = curr_process->broadcastConfig(config);
 
     // Create a Simulation object for the current simulation
     Simulation* simulation_ptr = new Simulation(inputs);

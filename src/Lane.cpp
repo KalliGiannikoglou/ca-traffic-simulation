@@ -136,7 +136,9 @@ int Lane::attemptSpawn(Vehicle* vehicle_ptr, std::vector<Vehicle*>* vehicles) {
         // return with no error
         return 0;
     }
+#ifdef DEBUG
     printf("Failed attempting to spawn %d at %d\n", vehicle_ptr->getId(), vehicle_ptr->getPosition());
+#endif
 
     // Return error
     return -1;

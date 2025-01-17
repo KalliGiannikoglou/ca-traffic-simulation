@@ -7,6 +7,8 @@
 
 #include <iostream>
 
+struct Config;
+
 /**
  * Class for the input options of a simulation that acts as a structure to organize the inputs in one place.
  * Has methods to load all the inputs from a file from an input text file.
@@ -26,6 +28,11 @@ public:
     double step_size;
     int warmup_time;
     int loadFromFile();
+
+    // Constructor with Config
+    Inputs(Config config);
+    Inputs(){};
+
 };
 struct Config {
     int num_lanes;
@@ -40,7 +47,6 @@ struct Config {
     int max_time;
     double step_size;
     int warmup_time;
-    // Add other fields as necessary
 };
 
 

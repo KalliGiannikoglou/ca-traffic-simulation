@@ -33,7 +33,7 @@ class MpiProcess{
         int getEndPosition();
 
         void defineMpiVehicle();
-        void broadcastConfig(Config &config);
+        Inputs broadcastConfig(Config &config);
         void divideRoad(int road_length);
         void sendVehicle(std::vector<Vehicle *>& vehicles);
         std::vector<std::vector<Vehicle *>> receiveVehicle();

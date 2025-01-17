@@ -57,10 +57,10 @@ int Simulation::run_simulation(MpiProcess *curr_proccess) {
     this->time = 0;
 
     // Initialize configuration
-    Config config;
+    // Config config;
 
-    // Broadcast configuration
-    curr_proccess->broadcastConfig(config);
+    // // Broadcast configuration
+    // curr_proccess->broadcastConfig(config);
 
     // Declare a vector for vehicles to be removed each step
     std::vector<int> vehicles_to_remove;

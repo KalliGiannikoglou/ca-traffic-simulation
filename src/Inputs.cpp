@@ -61,3 +61,18 @@ int Inputs::loadFromFile() {
     // Return with zero errors
     return 0;
 }
+
+Inputs::Inputs(Config config){
+    this->length = config.length;
+    this->max_time = config.max_time;
+    this->step_size = config.step_size; 
+    this->warmup_time = config.warmup_time;
+    this->num_lanes = config.num_lanes;
+    this->percent_full = config.percent_full;
+    this->max_speed = config.max_speed;
+    this->look_forward = config.look_forward;
+    this->look_other_forward = config.look_other_forward;
+    this->look_other_backward = config.look_other_backward;
+    this->prob_slow_down = config.prob_slow_down;    
+    this->prob_change = config.prob_change;
+}
