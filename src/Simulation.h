@@ -32,8 +32,7 @@ public:
     void sendVehicles(MpiProcess *curr_proccess);
     void receiveVehicles(MpiProcess *curr_proccess);
     bool isInVector(int value, const std::vector<int>& vec);
-    void sendStatistics(MpiProcess *curr_proccess);
-    void recvStatistics(MpiProcess *curr_proccess);
+    void gatherStatistics(MpiProcess *curr_proccess);
 };
 
 

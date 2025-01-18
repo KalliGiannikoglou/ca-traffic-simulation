@@ -24,13 +24,6 @@ int main(int argc, char** argv) {
 #endif
 
     MpiProcess* curr_process = new MpiProcess(argc, argv);
-
-    // Create an Inputs object to contain the simulation parameters
-    // Inputs inputs = Inputs();
-
-    // if (inputs.loadFromFile() != 0) {
-    //     return 1;
-    // }
     
     //Read the inputs from the file and broadcast them to all processes
     Config config;
@@ -40,9 +33,6 @@ int main(int argc, char** argv) {
     Simulation* simulation_ptr = new Simulation(inputs);
 
     curr_process->divideRoad(inputs.length);
-
-    // Synchronize all processes here
-    MPI_Barrier(MPI_COMM_WORLD);
 
     // Run the Simulation
     simulation_ptr->run_simulation(curr_process);

@@ -22,6 +22,7 @@ public:
     double getVariance();
     int getNumSamples();
     std::vector<double> getValues();
+    void addValues(std::vector<double> values);
 };
 
 

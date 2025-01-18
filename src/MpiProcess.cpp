@@ -194,17 +194,17 @@ Inputs MpiProcess::broadcastConfig(Config &config) {
         }
 
         // Map the loaded inputs to the Config structure
-        config.length = inputs.length;
-        config.max_time = inputs.max_time;
-        config.warmup_time = inputs.warmup_time;
-        config.num_lanes = inputs.num_lanes;
-        config.percent_full = inputs.percent_full;
-        config.max_speed = inputs.max_speed;
-        config.look_forward = inputs.look_forward;
-        config.look_other_forward = inputs.look_other_forward;
+        config.num_lanes           = inputs.num_lanes;
+        config.length              = inputs.length;
+        config.max_speed           = inputs.max_speed;
+        config.look_forward        = inputs.look_forward;
+        config.look_other_forward  = inputs.look_other_forward;
         config.look_other_backward = inputs.look_other_backward;
-        config.prob_slow_down = inputs.prob_slow_down;
-        config.prob_change = inputs.prob_change;
+        config.prob_slow_down      = inputs.prob_slow_down;
+        config.prob_change         = inputs.prob_change;
+        config.max_time            = inputs.max_time;
+        config.step_size           = inputs.step_size;
+        config.warmup_time         = inputs.warmup_time;
     }
 
     // Broadcast the configuration to all processes
@@ -215,7 +215,7 @@ Inputs MpiProcess::broadcastConfig(Config &config) {
         inputs = Inputs(config); 
     }
 
-    // Debug: Print configuration on all processes
+    // Print configuration on all processes
 #ifdef DEBUG
     printf("Process %d received config: road_length=%d, max_time=%d, warmup_time=%d\n",
            this->rank, inputs.length, inputs.max_time, inputs.warmup_time);

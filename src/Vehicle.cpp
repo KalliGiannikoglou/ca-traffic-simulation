@@ -268,6 +268,7 @@ int Vehicle::getId() {
  * @return
  */
 double Vehicle::getTravelTime(Inputs inputs) {
+    printf("time on road: %d\n, step size: %f\n", this->time_on_road, inputs.step_size);
     return inputs.step_size * this->time_on_road;
 }
 
