@@ -70,11 +70,3 @@ int Statistic::getNumSamples() {
 std::vector<double> Statistic::getValues() {
     return this->values;
 }
-
-/**
- * Concat the samples at the end of values vector
- * @param values all the samples in the Statistic
- */
-void Statistic::addValues(std::vector<double> values) {
-    this->values.insert(this->values.end(), values.begin(), values.end());
-}

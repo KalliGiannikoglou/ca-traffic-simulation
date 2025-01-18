@@ -167,9 +167,6 @@ int Simulation::run_simulation(MpiProcess *curr_proccess) {
             printf("Process: %d, vehicle %d is in position: %d\n", curr_proccess->getRank(), this->vehicles[i]->getId(), this->vehicles[i]->getPosition());
         }
 #endif
-       
-        // MPI_Barrier(MPI_COMM_WORLD); 
-            
     }
 
     // Print the total run time and average iterations per second and seconds per iteration
@@ -186,8 +183,6 @@ int Simulation::run_simulation(MpiProcess *curr_proccess) {
     this->road_ptr->printRoad();
 #endif
 
-    // All processes send the statistics to the last process
-    gatherStatistics(curr_proccess);
     // The last process calculates the final statistics
     if(curr_proccess->getRank() == curr_proccess->getNumOfProcesses() - 1){
      std::cout << "--- Simulation Results ---" << std::endl;
@@ -269,7 +264,6 @@ void Simulation::receiveVehicles(MpiProcess *curr_proccess) {
         }
     }
 
-
     // Spawn the received vehicles in their proper positions
     for(int i = 0; i < (int)vehicles_to_recv.size(); i++){
         for(auto vehicle: vehicles_to_recv[i]){
@@ -278,69 +272,6 @@ void Simulation::receiveVehicles(MpiProcess *curr_proccess) {
     }
 }
 
-
 bool Simulation::isInVector(int value, const std::vector<int>& vec) {
     return std::find(vec.begin(), vec.end(), value) != vec.end();
 }
-
-
-/**
- * @brief All the processes send the statistics to the last process 
- * and last process gathers all the statistics  
- * 
- * @param curr_proccess pointer to the current process 
- * @param stats vector of doubles with the time spent on the road of the vehicles 
- * that terminated in the current process
- */
-void Simulation::gatherStatistics(MpiProcess *curr_process) {
-    int num_processes = curr_process->getNumOfProcesses();
-    int rank = curr_process->getRank();
-    int dest_process = num_processes - 1;
-
-    // Stats vector to store the statistics of each process
-    std::vector<double> stats = this->travel_time->getValues();
-    int size = stats.size();
-
-    // Gather sizes from all processes to the last process
-    std::vector<int> recv_sizes;
-    if (rank == dest_process) {
-        recv_sizes.resize(num_processes);
-    }
-    // Gather the sizes from all vectors that will be sent
-    MPI_Gather(&size, 1, MPI_INT, recv_sizes.data(), 1, MPI_INT, dest_process, MPI_COMM_WORLD);
-
-    // Displacements vector to store the displacements (varying sizes) 
-    std::vector<int> displacements;
-    if (rank == dest_process) {
-        displacements.resize(num_processes);
-        displacements[0] = 0;
-        // Define where the data from each process starts
-        for (int i = 1; i < num_processes; i++) {
-            displacements[i] = displacements[i - 1] + recv_sizes[i - 1];
-        }
-    }
-
-    // Gather the statistics data
-    std::vector<double> all_stats;
-    if (rank == dest_process) {
-        int total_size = 0;
-        // Only sum non-zero sizes
-        for (int s : recv_sizes){
-            total_size = total_size + s;
-        }
-        all_stats.resize(total_size);
-    }
-
-    // Gather all the statistics
-    MPI_Gatherv(
-        stats.data(), size, MPI_DOUBLE,
-        all_stats.data(), recv_sizes.data(), displacements.data(), MPI_DOUBLE,
-        dest_process, MPI_COMM_WORLD
-    );
-
-    // Store the received data in the last process vector
-    if (rank == dest_process) {
-        this->travel_time->addValues(all_stats); // Assuming a method to set all values
-    }
-}
-
